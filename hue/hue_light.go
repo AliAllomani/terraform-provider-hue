@@ -40,6 +40,8 @@ func flattenLightState(state *huego.State) map[string]interface{} {
 		"on":         state.On,
 		"color_mode": state.ColorMode,
 		"scene":      state.Scene,
+		"brightness": state.Bri,
+		"saturation": state.Sat,
 	}
 	return flattenstate
 }
