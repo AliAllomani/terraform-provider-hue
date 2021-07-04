@@ -12,12 +12,12 @@ Manages a Hue light.
 
 ```hcl
 resource "hue_light" "example" {
-    light_index = 2
+  light_index = 2
 
-    state {
+  state {
     hue = 24918
-        on = true
-    }
+    on  = true
+  }
 }
 ```
 

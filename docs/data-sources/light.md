@@ -12,7 +12,7 @@ Use this data source to access information about an existing light.
 
 ```hcl
 data "hue_light" "example" {
-    light_index = 1
+  light_index = 1
 }
 ```
 

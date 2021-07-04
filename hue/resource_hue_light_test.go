@@ -52,7 +52,7 @@ resource "hue_light" "test" {
   light_index = %d
 
   state {
-	  on = true
+    on = true
   }
 }
 `, lightIndex)
