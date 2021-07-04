@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"strconv"
 
 	"github.com/amimof/huego"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -20,10 +19,15 @@ func resourceHueLight() *schema.Resource {
 			State: schema.ImportStatePassthrough,
 		},
 		Schema: map[string]*schema.Schema{
-			"light_index": {
-				Type:        schema.TypeInt,
+			"unique_id": {
+				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
+				Description: "Unique id of the device. The MAC address of the device with a unique endpoint id in the form: AA:BB:CC:DD:EE:FF:00:11-XX",
+			},
+			"light_index": {
+				Type:        schema.TypeInt,
+				Computed:    true,
 				Description: "Hue light index (ID)",
 			},
 			"name": {
@@ -31,11 +35,6 @@ func resourceHueLight() *schema.Resource {
 				Optional:    true,
 				Computed:    true,
 				Description: "A unique, editable name given to the light.",
-			},
-			"unique_id": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Unique id of the device. The MAC address of the device with a unique endpoint id in the form: AA:BB:CC:DD:EE:FF:00:11-XX",
 			},
 			"model_id": {
 				Type:        schema.TypeString,
@@ -106,7 +105,15 @@ func resourceHueLight() *schema.Resource {
 func resourceHueLightCreateUpdate(d *schema.ResourceData, meta interface{}) error {
 
 	client := meta.(*huego.Bridge)
-	light_index := d.Get("light_index").(int)
+	uniqueId := d.Get("unique_id").(string)
+
+	lightIndex, err := lightIndexFromUniqueId(client, uniqueId)
+	if err != nil {
+		return fmt.Errorf("Error create/update light : %v", err)
+	}
+
+	d.SetId(uniqueId)
+	d.Set("light_index", lightIndex)
 
 	updateConfig := huego.Light{}
 
@@ -114,17 +121,17 @@ func resourceHueLightCreateUpdate(d *schema.ResourceData, meta interface{}) erro
 		updateConfig.Name = name.(string)
 	}
 
-	updatedLight, err := client.UpdateLight(light_index, updateConfig)
+	updatedLight, err := client.UpdateLight(lightIndex, updateConfig)
 	if err != nil {
-		return fmt.Errorf("Could not Create/Update Light with Index %d : %v", light_index, err)
+		return fmt.Errorf("Could not Create/Update Light with Index %d : %v", lightIndex, err)
 	}
 
 	updatedLightJson, err := json.Marshal(updatedLight)
 	if err != nil {
-		return fmt.Errorf("Could not Marshal Light with Index %d : %v", light_index, err)
+		return fmt.Errorf("Could not Marshal Light with Index %d : %v", lightIndex, err)
 	}
 
-	log.Printf("[DEBUG] Updated light with Index %d : %s", light_index, updatedLightJson)
+	log.Printf("[DEBUG] Updated light with Index %d : %s", lightIndex, updatedLightJson)
 
 	if d.HasChange("state") {
 		if err := resourceHueLightStateCreateUpdate(client, d); err != nil {
@@ -132,18 +139,17 @@ func resourceHueLightCreateUpdate(d *schema.ResourceData, meta interface{}) erro
 		}
 	}
 
-	d.SetId(fmt.Sprint(light_index))
-
 	return resourceHueLightRead(d, meta)
 }
 
 func resourceHueLightRead(d *schema.ResourceData, meta interface{}) error {
 
 	client := meta.(*huego.Bridge)
-	light_index, err := strconv.Atoi(d.Id())
+	uniqueId := d.Id()
 
+	light_index, err := lightIndexFromUniqueId(client, uniqueId)
 	if err != nil {
-		return fmt.Errorf("Error parsing light Index from ID : %s : %v", d.Id(), err)
+		return fmt.Errorf("Error parsing light Index from ID : %s : %v", uniqueId, err)
 	}
 
 	light, err := client.GetLight(light_index)
@@ -167,6 +173,7 @@ func resourceHueLightRead(d *schema.ResourceData, meta interface{}) error {
 }
 
 func resourceHueLightDelete(d *schema.ResourceData, meta interface{}) error {
+	// We will not delete the light from the bridge, just from the state file
 	return nil
 }
 
@@ -205,7 +212,7 @@ func resourceHueLightStateCreateUpdate(client *huego.Bridge, d *schema.ResourceD
 	}
 
 	if v, ok := currentState["saturation"]; ok {
-		updateState.Bri = uint8(v.(int))
+		updateState.Sat = uint8(v.(int))
 	}
 
 	updatedLightState, err := client.SetLightState(light_index, updateState)

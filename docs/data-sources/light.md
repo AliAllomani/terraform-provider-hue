@@ -12,23 +12,23 @@ Use this data source to access information about an existing light.
 
 ```hcl
 data "hue_light" "example" {
-  light_index = 1
+  unique_id = "00:17:88:01:03:97:02:b8-0b"
 }
 ```
 
 ## Arguments Reference
 
-- `light_index` - (Required) (Number) Hue light index (ID)
+- `unique_id` - (Required) (String) The Unique Id of the light. The MAC address of the device with a unique endpoint id in the form: AA:BB:CC:DD:EE:FF:00:11-XX
 
 ## Attribute Reference
 
 - `id` - (String) The ID of this resource.
+- `light_index` - (Number) Hue light index.
 - `name` - (String) A unique, editable name given to the light.
 - `state` - A block of current state of the Light (see below).
 - `model_id` - (String) The hardware model of the light.
 - `product_id` - (String) The Product ID of the Light
 - `sw_version` - (String) An identifier for the software version running on the light.
-- `unique_id` - (String) Unique id of the device. The MAC address of the device with a unique endpoint id in the form: AA:BB:CC:DD:EE:FF:00:11-XX
 
 ---
 

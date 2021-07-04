@@ -1,8 +1,6 @@
 package hue
 
 import (
-	"fmt"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -10,20 +8,21 @@ func dataSourceHueLight() *schema.Resource {
 	return &schema.Resource{
 		Read: dataSourceHueLightRead,
 		Schema: map[string]*schema.Schema{
-			"light_index": {
-				Type:        schema.TypeInt,
+			"unique_id": {
+				Type:        schema.TypeString,
 				Required:    true,
-				Description: "Hue light index (ID)",
+				Description: "Unique id of the device. The MAC address of the device with a unique endpoint id in the form: AA:BB:CC:DD:EE:FF:00:11-XX",
 			},
+
 			"name": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "A unique, editable name given to the light.",
 			},
-			"unique_id": {
-				Type:        schema.TypeString,
+			"light_index": {
+				Type:        schema.TypeInt,
 				Computed:    true,
-				Description: "Unique id of the device. The MAC address of the device with a unique endpoint id in the form: AA:BB:CC:DD:EE:FF:00:11-XX",
+				Description: "Hue light index (ID)",
 			},
 			"model_id": {
 				Type:        schema.TypeString,
@@ -89,8 +88,8 @@ func dataSourceHueLight() *schema.Resource {
 
 func dataSourceHueLightRead(d *schema.ResourceData, meta interface{}) error {
 
-	light_index := d.Get("light_index").(int)
-	d.SetId(fmt.Sprint(light_index))
+	uniqueId := d.Get("unique_id").(string)
+	d.SetId(uniqueId)
 
 	return resourceHueLightRead(d, meta)
 }

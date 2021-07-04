@@ -10,9 +10,26 @@ Manages a Hue light.
 
 ## Example Usage
 
+### Direct Light Unique ID assignment
+
 ```hcl
 resource "hue_light" "example" {
-  light_index = 2
+  unique_id = "00:17:88:01:03:97:02:b8-0b"
+
+  state {
+    hue = 24918
+    on  = true
+  }
+}
+```
+
+### Light Unique ID from hue_lights Data Source
+
+```hcl
+data "hue_lights" "example" {}
+
+resource "hue_light" "example" {
+  unique_id = data.hue_lights.example.0.unique_id
 
   state {
     hue = 24918
@@ -23,7 +40,7 @@ resource "hue_light" "example" {
 
 ## Arguments Reference
 
-- `light_index` - (Required) (Number) Hue light index (ID)
+- `unique_id` - (Required) (String) The Unique ID of the light. The MAC address of the device with a unique endpoint id in the form: AA:BB:CC:DD:EE:FF:00:11-XX
 - `name` - (Optional) (String) A unique, editable name given to the light.
 - `state` - (Optional) A block of current state of the Light (see below).
 
@@ -39,15 +56,15 @@ resource "hue_light" "example" {
 ## Attributes Reference
 
 - `id` - (String) The ID of this resource.
+- `light_index` - (Number) Hue light index.
 - `model_id` - (String) The hardware model of the light.
 - `product_id` - (String) The Product ID of the Light
 - `sw_version` - (String) An identifier for the software version running on the light.
-- `unique_id` - (String) Unique id of the device. The MAC address of the device with a unique endpoint id in the form: AA:BB:CC:DD:EE:FF:00:11-XX
 
 ## Import
 
-A Light can be imported using its index, e.g.
+A Light can be imported using its unique ID, e.g.
 
 ```shell
-terraform import hue_light.example 1
+terraform import hue_light.example 00:17:88:01:03:97:02:b8-0b
 ```

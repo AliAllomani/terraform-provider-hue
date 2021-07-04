@@ -17,20 +17,20 @@ func dataSourceHueLights() *schema.Resource {
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
+						"unique_id": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Unique id of the device. The MAC address of the device with a unique endpoint id in the form: AA:BB:CC:DD:EE:FF:00:11-XX",
+						},
 						"light_index": {
 							Type:        schema.TypeInt,
-							Required:    true,
+							Computed:    true,
 							Description: "Hue light index (ID)",
 						},
 						"name": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "A unique, editable name given to the light.",
-						},
-						"unique_id": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Unique id of the device. The MAC address of the device with a unique endpoint id in the form: AA:BB:CC:DD:EE:FF:00:11-XX",
 						},
 						"model_id": {
 							Type:        schema.TypeString,

@@ -1,6 +1,8 @@
 package hue
 
 import (
+	"fmt"
+	"log"
 	"sort"
 
 	"github.com/amimof/huego"
@@ -44,4 +46,22 @@ func flattenLightState(state *huego.State) map[string]interface{} {
 		"saturation": state.Sat,
 	}
 	return flattenstate
+}
+
+func lightIndexFromUniqueId(client *huego.Bridge, uniqueID string) (int, error) {
+
+	lights, err := client.GetLights()
+	if err != nil {
+		return 0, fmt.Errorf("Error retrieving lights: %v", err)
+	}
+
+	for _, light := range lights {
+		if light.UniqueID == uniqueID {
+			log.Printf("[INFO] Found Light Index %d for Light Unique ID: %s", light.ID, light.UniqueID)
+			return light.ID, nil
+		}
+	}
+
+	return 0, fmt.Errorf("Cloud not find a light with Unique ID : %s", uniqueID)
+
 }
